@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نمودار پیشرفت کنکور - ثبت بر اساس تاریخ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/fa.js"></script>
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --warning-color: #f8961e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --bio-color: #2ecc71;
+            --physics-color: #e74c3c;
+            --chemistry-color: #3498db;
+            --math-color: #9b59b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            opacity: 0.3;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        header h1 i {
+            margin-left: 15px;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .form-section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .chart-section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            margin-left: 10px;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #444;
+            font-size: 1.05rem;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            z-index: 10;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background-color: #fafafa;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .flatpickr-input {
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn-delete {
+            background-color: var(--danger-color);
+            margin-top: 15px;
+        }
+        
+        .btn-delete:hover {
+            background-color: #d1145a;
+        }
+        
+        .subjects-overview {
+            margin-top: 30px;
+        }
+        
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .subject-card {
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .subject-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        
+        .subject-card.biology {
+            background: linear-gradient(135deg, var(--bio-color), #27ae60);
+        }
+        
+        .subject-card.physics {
+            background: linear-gradient(135deg, var(--physics-color), #c0392b);
+        }
+        
+        .subject-card.chemistry {
+            background: linear-gradient(135deg, var(--chemistry-color), #2980b9);
+        }
+        
+        .subject-card.math {
+            background: linear-gradient(135deg, var(--math-color), #8e44ad);
+        }
+        
+        .subject-card.active {
+            box-shadow: 0 0 0 3px white, 0 0 0 6px rgba(255,255,255,0.5);
+        }
+        
+        .subject-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .subject-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .subject-percent {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+        
+        .subject-tests {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 10px;
+        }
+        
+        .lesson-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .lesson-btn {
+            padding: 10px 20px;
+            background-color: #f1f5f9;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #555;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .lesson-btn i {
+            font-size: 0.9rem;
+        }
+        
+        .lesson-btn.biology {
+            color: var(--bio-color);
+        }
+        
+        .lesson-btn.physics {
+            color: var(--physics-color);
+        }
+        
+        .lesson-btn.chemistry {
+            color: var(--chemistry-color);
+        }
+        
+        .lesson-btn.math {
+            color: var(--math-color);
+        }
+        
+        .lesson-btn.active {
+            color: white;
+        }
+        
+        .lesson-btn.biology.active {
+            background-color: var(--bio-color);
+        }
+        
+        .lesson-btn.physics.active {
+            background-color: var(--physics-color);
+        }
+        
+        .lesson-btn.chemistry.active {
+            background-color: var(--chemistry-color);
+        }
+        
+        .lesson-btn.math.active {
+            background-color: var(--math-color);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            border-top: 5px solid var(--primary-color);
+        }
+        
+        .stat-card.biology {
+            border-top-color: var(--bio-color);
+        }
+        
+        .stat-card.physics {
+            border-top-color: var(--physics-color);
+        }
+        
+        .stat-card.chemistry {
+            border-top-color: var(--chemistry-color);
+        }
+        
+        .stat-card.math {
+            border-top-color: var(--math-color);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+        
+        .stat-card.biology .stat-value {
+            color: var(--bio-color);
+        }
+        
+        .stat-card.physics .stat-value {
+            color: var(--physics-color);
+        }
+        
+        .stat-card.chemistry .stat-value {
+            color: var(--chemistry-color);
+        }
+        
+        .stat-card.math .stat-value {
+            color: var(--math-color);
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            color: #666;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #777;
+        }
+        
+        .no-data i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+        
+        .no-data h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .progress-indicator {
+            height: 12px;
+            background-color: #e2e8f0;
+            border-radius: 6px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 6px;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .progress-fill.biology {
+            background-color: var(--bio-color);
+        }
+        
+        .progress-fill.physics {
+            background-color: var(--physics-color);
+        }
+        
+        .progress-fill.chemistry {
+            background-color: var(--chemistry-color);
+        }
+        
+        .progress-fill.math {
+            background-color: var(--math-color);
+        }
+        
+        .test-list {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            border-right: 4px solid var(--primary-color);
+        }
+        
+        .test-item.biology {
+            border-right-color: var(--bio-color);
+        }
+        
+        .test-item.physics {
+            border-right-color: var(--physics-color);
+        }
+        
+        .test-item.chemistry {
+            border-right-color: var(--chemistry-color);
+        }
+        
+        .test-item.math {
+            border-right-color: var(--math-color);
+        }
+        
+        .test-date {
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95rem;
+        }
+        
+        .test-percent {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .test-item.biology .test-percent {
+            color: var(--bio-color);
+        }
+        
+        .test-item.physics .test-percent {
+            color: var(--physics-color);
+        }
+        
+        .test-item.chemistry .test-percent {
+            color: var(--chemistry-color);
+        }
+        
+        .test-item.math .test-percent {
+            color: var(--math-color);
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.2rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            .chart-container {
+                height: 350px;
+            }
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        /* استایل تقویم فارسی */
+        .flatpickr-calendar {
+            font-family: 'Vazirmatn', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-radius: 12px;
+        }
+        
+        .flatpickr-months .flatpickr-month {
+            height: 60px;
+            color: var(--primary-color);
+        }
+        
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            font-weight: 600;
+        }
+        
+        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange, .flatpickr-day.selected.inRange, .flatpickr-day.startRange.inRange, .flatpickr-day.endRange.inRange, .flatpickr-day.selected:focus, .flatpickr-day.startRange:focus, .flatpickr-day.endRange:focus, .flatpickr-day.selected:hover, .flatpickr-day.startRange:hover, .flatpickr-day.endRange:hover, .flatpickr-day.selected.prevMonthDay, .flatpickr-day.startRange.prevMonthDay, .flatpickr-day.endRange.prevMonthDay, .flatpickr-day.selected.nextMonthDay, .flatpickr-day.startRange.nextMonthDay, .flatpickr-day.endRange.nextMonthDay {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .flatpickr-day.today {
+            border-color: var(--success-color);
+        }
+        
+        .flatpickr-day.today:hover {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-chart-line"></i> سیستم رصد پیشرفت کنکور</h1>
+            <p>ثبت و تحلیل درصدهای آزمون‌های آزمایشی بر اساس تاریخ آزمون</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="form-section">
+                <h2 class="section-title"><i class="fas fa-edit"></i> ثبت درصد آزمون</h2>
+                <form id="addTestForm">
+                    <div class="form-group">
+                        <label for="lessonName">انتخاب درس:</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-book"></i>
+                            <select id="lessonName" required>
+                                <option value="" selected disabled>لطفاً درس مورد نظر را انتخاب کنید</option>
+                                <option value="زیست">زیست شناسی</option>
+                                <option value="فیزیک">فیزیک</option>
+                                <option value="شیمی">شیمی</option>
+                                <option value="ریاضی">ریاضی</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="testDate">تاریخ برگزاری آزمون:</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                            <input type="text" id="testDate" class="flatpickr-input" placeholder="برای انتخاب تاریخ کلیک کنید" required readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="testPercent">درصد کسب شده:</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-percentage"></i>
+                            <input type="number" id="testPercent" min="0" max="100" step="0.1" placeholder="مثال: 75.5" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn">
+                        <i class="fas fa-plus-circle"></i> ثبت درصد آزمون
+                    </button>
+                    
+                    <button type="button" id="clearData" class="btn btn-delete">
+                        <i class="fas fa-trash-alt"></i> پاک کردن همه داده‌ها
+                    </button>
+                </form>
+                
+                <div class="subjects-overview">
+                    <h3 class="section-title" style="font-size: 1.3rem; margin-top: 30px;">
+                        <i class="fas fa-list-ol"></i> خلاصه دروس
+                    </h3>
+                    <div class="subjects-grid" id="subjectsGrid">
+                        <!-- Subject cards will be dynamically added here -->
+                    </div>
+                    
+                    <div class="test-list" id="testList">
+                        <!-- Test list will be dynamically added here -->
+                    </div>
+                </div>
+            </section>
+            
+            <section class="chart-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> نمودار پیشرفت بر اساس تاریخ</h2>
+                
+                <div class="lesson-selector" id="lessonSelector">
+                    <!-- Lesson buttons will be dynamically added here -->
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                    <div id="noChartData" class="no-data">
+                        <i class="fas fa-chart-bar"></i>
+                        <h3>هنوز داده‌ای ثبت نکرده‌اید</h3>
+                        <p>برای مشاهده نمودار پیشرفت، درصد اولین آزمون خود را ثبت کنید</p>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card biology" id="biologyStats">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">میانگین زیست</div>
+                        <div class="progress-indicator">
+                            <div class="progress-fill biology" id="biologyFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card physics" id="physicsStats">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">میانگین فیزیک</div>
+                        <div class="progress-indicator">
+                            <div class="progress-fill physics" id="physicsFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card chemistry" id="chemistryStats">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">میانگین شیمی</div>
+                        <div class="progress-indicator">
+                            <div class="progress-fill chemistry" id="chemistryFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card math" id="mathStats">
+                        <div class="stat-value">0%</div>
+                        <div class="stat-label">میانگین ریاضی</div>
+                        <div class="progress-indicator">
+                            <div class="progress-fill math" id="mathFill"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <div class="copyright">
+            طراحی شده برای داوطلبان کنکور علوم تجربی | سیستم رصد پیشرفت آزمون‌ها بر اساس تاریخ
+        </div>
+    </div>
+
+    <script>
+        // داده‌های اولیه برای چهار درس اصلی کنکور تجربی
+        // ساختار جدید: هر درس شامل آرایه‌ای از اشیاء است که هر کدام شامل تاریخ و درصد هستند
+        let testData = JSON.parse(localStorage.getItem('testProgressData')) || {
+            زیست: [
+                { date: '2024-01-15', percent: 72 },
+                { date: '2024-01-30', percent: 78 },
+                { date: '2024-02-15', percent: 82 },
+                { date: '2024-03-01', percent: 75 },
+                { date: '2024-03-15', percent: 80 }
+            ],
+            فیزیک: [
+                { date: '2024-01-15', percent: 65 },
+                { date: '2024-01-30', percent: 70 },
+                { date: '2024-02-15', percent: 68 },
+                { date: '2024-03-01', percent: 72 },
+                { date: '2024-03-15', percent: 75 }
+            ],
+            شیمی: [
+                { date: '2024-01-15', percent: 78 },
+                { date: '2024-01-30', percent: 80 },
+                { date: '2024-02-15', percent: 82 },
+                { date: '2024-03-01', percent: 79 },
+                { date: '2024-03-15', percent: 85 }
+            ],
+            ریاضی: [
+                { date: '2024-01-15', percent: 70 },
+                { date: '2024-01-30', percent: 73 },
+                { date: '2024-02-15', percent: 68 },
+                { date: '2024-03-01', percent: 75 },
+                { date: '2024-03-15', percent: 78 }
+            ]
+        };
+        
+        // رنگ‌های اختصاصی برای هر درس
+        const subjectColors = {
+            زیست: '#2ecc71',
+            فیزیک: '#e74c3c',
+            شیمی: '#3498db',
+            ریاضی: '#9b59b6'
+        };
+        
+        // آیکون‌های اختصاصی برای هر درس
+        const subjectIcons = {
+            زیست: 'fas fa-dna',
+            فیزیک: 'fas fa-atom',
+            شیمی: 'fas fa-flask',
+            ریاضی: 'fas fa-calculator'
+        };
+        
+        // نام فارسی کامل هر درس
+        const subjectFullNames = {
+            زیست: 'زیست شناسی',
+            فیزیک: 'فیزیک',
+            شیمی: 'شیمی',
+            ریاضی: 'ریاضی'
+        };
+        
+        let currentLesson = 'زیست';
+        let chart = null;
+        let datePicker = null;
+        
+        // تابع تبدیل تاریخ به فرمت قابل نمایش فارسی
+        function formatDateToPersian(dateString) {
+            const date = new Date(dateString);
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('fa-IR', options);
+        }
+        
+        // تابع تبدیل تاریخ به فرمت مختصر فارسی
+        function formatDateToPersianShort(dateString) {
+            const date = new Date(dateString);
+            const month = date.toLocaleDateString('fa-IR', { month: 'short' });
+            const day = date.toLocaleDateString('fa-IR', { day: 'numeric' });
+            return `${day} ${month}`;
+        }
+        
+        // بارگذاری اولیه صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            // راه‌اندازی datepicker فارسی
+            datePicker = flatpickr("#testDate", {
+                locale: "fa",
+                altInput: true,
+                altFormat: "Y-m-d",
+                dateFormat: "Y-m-d",
+                defaultDate: new Date(),
+                maxDate: new Date(),
+                disableMobile: true
+            });
+            
+            updateSubjectCards();
+            updateLessonSelector();
+            updateChart();
+            updateStatistics();
+            
+            // رویداد فرم ثبت آزمون
+            document.getElementById('addTestForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addTestData();
+            });
+            
+            // رویداد پاک کردن همه داده‌ها
+            document.getElementById('clearData').addEventListener('click', function() {
+                if (confirm('آیا از پاک کردن همه داده‌های ثبت شده مطمئن هستید؟ این عمل قابل بازگشت نیست.')) {
+                    testData = {
+                        زیست: [],
+                        فیزیک: [],
+                        شیمی: [],
+                        ریاضی: []
+                    };
+                    localStorage.setItem('testProgressData', JSON.stringify(testData));
+                    updateSubjectCards();
+                    updateLessonSelector();
+                    updateChart();
+                    updateStatistics();
+                }
+            });
+        });
+        
+        // اضافه کردن داده آزمون جدید
+        function addTestData() {
+            const lessonName = document.getElementById('lessonName').value;
+            const testDate = document.getElementById('testDate').value;
+            const testPercent = parseFloat(document.getElementById('testPercent').value);
+            
+            if (!lessonName || !testDate || isNaN(testPercent)) {
+                alert('لطفاً همه فیلدها را به درستی پر کنید');
+                return;
+            }
+            
+            if (testPercent < 0 || testPercent > 100) {
+                alert('درصد باید بین 0 تا 100 باشد');
+                return;
+            }
+            
+            // بررسی تاریخ تکراری برای همان درس
+            const existingTest = testData[lessonName].find(test => test.date === testDate);
+            if (existingTest) {
+                if (!confirm(`برای تاریخ ${formatDateToPersian(testDate)} قبلاً درصد ${existingTest.percent}% ثبت شده است. آیا می‌خواهید آن را با ${testPercent}% جایگزین کنید؟`)) {
+                    return;
+                }
+                // حذف آزمون قبلی
+                testData[lessonName] = testData[lessonName].filter(test => test.date !== testDate);
+            }
+            
+            // اضافه کردن آزمون جدید
+            testData[lessonName].push({ date: testDate, percent: testPercent });
+            
+            // مرتب‌سازی آزمون‌ها بر اساس تاریخ
+            testData[lessonName].sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // ذخیره در localStorage
+            localStorage.setItem('testProgressData', JSON.stringify(testData));
+            
+            // به‌روزرسانی نمایش
+            updateSubjectCards();
+            updateLessonSelector();
+            
+            // اگر درس جاری همان درس اضافه شده است، نمودار را به‌روزرسانی کن
+            if (currentLesson === lessonName) {
+                updateChart();
+            } else {
+                // در غیر این صورت، درس جاری را تغییر بده
+                currentLesson = lessonName;
+                updateLessonSelector();
+                updateChart();
+            }
+            
+            updateStatistics();
+            
+            // پاک کردن فرم (به جز درس)
+            document.getElementById('testPercent').value = '';
+            
+            // نمایش پیام موفقیت
+            showNotification(`درصد ${testPercent}% برای ${subjectFullNames[lessonName]} در تاریخ ${formatDateToPersian(testDate)} ثبت شد`, 'success');
+        }
+        
+        // نمایش نوتیفیکیشن
+        function showNotification(message, type) {
+            // ایجاد عنصر نوتیفیکیشن
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                max-width: 400px;
+                margin: 0 auto;
+                background-color: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+                text-align: center;
+                font-weight: 600;
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            `;
+            
+            // اضافه کردن استایل‌های انیمیشن
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateY(-100px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // حذف نوتیفیکیشن بعد از 3 ثانیه
+            setTimeout(() => {
+                notification.remove();
+                style.remove();
+            }, 3000);
+        }
+        
+        // به‌روزرسانی کارت‌های دروس
+        function updateSubjectCards() {
+            const subjectsGrid = document.getElementById('subjectsGrid');
+            const testList = document.getElementById('testList');
+            
+            subjectsGrid.innerHTML = '';
+            testList.innerHTML = '';
+            
+            // ایجاد کارت برای هر درس
+            Object.keys(testData).forEach(lesson => {
+                const tests = testData[lesson];
+                const testCount = tests.length;
+                const lastTest = testCount > 0 ? tests[tests.length - 1] : null;
+                const lastPercent = lastTest ? lastTest.percent : 0;
+                const average = testCount > 0 ? (tests.reduce((sum, test) => sum + test.percent, 0) / testCount).toFixed(1) : 0;
+                
+                // ایجاد کارت درس
+                const card = document.createElement('div');
+                card.className = `subject-card ${getSubjectClass(lesson)} ${lesson === currentLesson ? 'active' : ''}`;
+                card.innerHTML = `
+                    <div class="subject-name">
+                        <i class="${subjectIcons[lesson]}"></i> ${subjectFullNames[lesson]}
+                    </div>
+                    <div class="subject-stats">
+                        <div>
+                            <div class="subject-percent">${lastPercent}%</div>
+                            <div class="subject-tests">آخرین آزمون</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.2rem; font-weight: 700;">${average}%</div>
+                            <div class="subject-tests">میانگین</div>
+                        </div>
+                    </div>
+                `;
+                
+                // امکان کلیک برای انتخاب درس
+                card.addEventListener('click', function() {
+                    currentLesson = lesson;
+                    updateSubjectCards();
+                    updateLessonSelector();
+                    updateChart();
+                    updateTestList();
+                });
+                
+                subjectsGrid.appendChild(card);
+            });
+            
+            // به‌روزرسانی لیست آزمون‌های درس انتخاب شده
+            updateTestList();
+        }
+        
+        // به‌روزرسانی لیست آزمون‌های درس انتخاب شده
+        function updateTestList() {
+            const testList = document.getElementById('testList');
+            testList.innerHTML = '';
+            
+            const tests = testData[currentLesson];
+            const testCount = tests.length;
+            
+            if (testCount === 0) {
+                testList.innerHTML = '<div class="no-data" style="padding: 20px 0;"><p>هنوز آزمونی برای این درس ثبت نشده</p></div>';
+                return;
+            }
+            
+            // ایجاد آیتم برای هر آزمون
+            tests.forEach(test => {
+                const testItem = document.createElement('div');
+                testItem.className = `test-item ${getSubjectClass(currentLesson)}`;
+                testItem.innerHTML = `
+                    <div class="test-date">${formatDateToPersianShort(test.date)}</div>
+                    <div class="test-percent">${test.percent}%</div>
+                `;
+                testList.appendChild(testItem);
+            });
+        }
+        
+        // به‌روزرسانی انتخاب‌گر درس
+        function updateLessonSelector() {
+            const lessonSelector = document.getElementById('lessonSelector');
+            lessonSelector.innerHTML = '';
+            
+            Object.keys(testData).forEach(lesson => {
+                const button = document.createElement('button');
+                button.className = `lesson-btn ${getSubjectClass(lesson)} ${lesson === currentLesson ? 'active' : ''}`;
+                button.innerHTML = `<i class="${subjectIcons[lesson]}"></i> ${subjectFullNames[lesson]}`;
+                button.addEventListener('click', function() {
+                    currentLesson = lesson;
+                    updateSubjectCards();
+                    updateLessonSelector();
+                    updateChart();
+                    updateTestList();
+                });
+                
+                lessonSelector.appendChild(button);
+            });
+        }
+        
+        // به‌روزرسانی نمودار
+        function updateChart() {
+            const chartCanvas = document.getElementById('progressChart');
+            const noChartData = document.getElementById('noChartData');
+            
+            const tests = testData[currentLesson];
+            const testCount = tests.length;
+            
+            if (testCount === 0) {
+                chartCanvas.style.display = 'none';
+                noChartData.style.display = 'block';
+                return;
+            }
+            
+            chartCanvas.style.display = 'block';
+            noChartData.style.display = 'none';
+            
+            // آماده‌سازی داده‌ها برای نمودار
+            const dates = tests.map(test => test.date);
+            const percentages = tests.map(test => test.percent);
+            
+            // اگر نمودار قبلی وجود دارد، آن را پاک کن
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // ایجاد نمودار جدید
+            const ctx = chartCanvas.getContext('2d');
+            const subjectColor = subjectColors[currentLesson];
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: `${subjectFullNames[currentLesson]} - روند پیشرفت`,
+                        data: tests.map(test => ({
+                            x: test.date,
+                            y: test.percent
+                        })),
+                        backgroundColor: `${subjectColor}20`,
+                        borderColor: subjectColor,
+                        borderWidth: 4,
+                        pointBackgroundColor: subjectColor,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 7,
+                        pointHoverRadius: 10,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 15,
+                                    family: 'Vazirmatn, sans-serif'
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: function(context) {
+                                    const date = new Date(context[0].parsed.x);
+                                    return formatDateToPersian(date.toISOString().split('T')[0]);
+                                },
+                                label: function(context) {
+                                    return `درصد: ${context.parsed.y}%`;
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleFont: {
+                                size: 14,
+                                family: 'Vazirmatn, sans-serif'
+                            },
+                            bodyFont: {
+                                size: 14,
+                                family: 'Vazirmatn, sans-serif'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 10,
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: {
+                                    size: 13,
+                                    family: 'Vazirmatn, sans-serif'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'درصد',
+                                font: {
+                                    size: 14,
+                                    family: 'Vazirmatn, sans-serif'
+                                }
+                            }
+                        },
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'month',
+                                displayFormats: {
+                                    month: 'MMM yyyy'
+                                },
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 13,
+                                    family: 'Vazirmatn, sans-serif'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'تاریخ آزمون',
+                                font: {
+                                    size: 14,
+                                    family: 'Vazirmatn, sans-serif'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // به‌روزرسانی آمار
+        function updateStatistics() {
+            Object.keys(testData).forEach(lesson => {
+                const tests = testData[lesson];
+                const testCount = tests.length;
+                const average = testCount > 0 ? (tests.reduce((sum, test) => sum + test.percent, 0) / testCount).toFixed(1) : 0;
+                
+                // به‌روزرسانی آمار هر درس
+                const statElement = document.getElementById(`${lesson}Stats`);
+                if (statElement) {
+                    statElement.querySelector('.stat-value').textContent = `${average}%`;
+                    const fillElement = document.getElementById(`${lesson}Fill`);
+                    if (fillElement) {
+                        fillElement.style.width = `${average}%`;
+                    }
+                }
+            });
+        }
+        
+        // کمک‌کننده: دریافت کلاس CSS برای هر درس
+        function getSubjectClass(lesson) {
+            switch(lesson) {
+                case 'زیست': return 'biology';
+                case 'فیزیک': return 'physics';
+                case 'شیمی': return 'chemistry';
+                case 'ریاضی': return 'math';
+                default: return '';
+            }
+        }
+    </script>
+</body>
+</html>
